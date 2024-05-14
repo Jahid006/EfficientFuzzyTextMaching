@@ -14,7 +14,7 @@ FuzzyTextMatcher is a Python class for fuzzy text matching, capable of efficient
 1. Clone the repository:
 
     ```bash
-    git clone https://github.com/your_username/FuzzyTextMatcherV2.git
+    git clone https://github.com/Jahid006/EfficientFuzzyTextMaching.git
     ```
 
 2. Install the required dependencies:
@@ -36,7 +36,7 @@ list_of_strings = sorted(list_of_strings, key = lambda x: (len(x), x))
 ftm = FuzzyTextMatcher(
     list_of_strings=list_of_strings,
     similarity_cutoff=60,
-    preserve_order=False, # if true, returns a order preserving list of matching text
+    preserve_order=False, # if true, returns an order preserving list of matching text
     search_bound=(-15, +15)
 )
 
