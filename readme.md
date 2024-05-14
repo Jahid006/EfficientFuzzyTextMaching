@@ -36,7 +36,7 @@ list_of_strings = sorted(list_of_strings, key = lambda x: (len(x), x))
 ftm = FuzzyTextMatcher(
     list_of_strings=list_of_strings,
     similarity_cutoff=60,
-    preserve_order=True,
+    preserve_order=False, # if true, returns a order preserving list of matching text
     search_bound=(-15, +15)
 )
 
