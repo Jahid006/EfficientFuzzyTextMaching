@@ -7,35 +7,30 @@ from difflib import SequenceMatcher
 class FuzzyTextMatcher(object):
     """
     FuzzyTextMatcher is a class for fuzzy text matching.
-
-    Attributes:
-        similarity_cutoff (int): Minimum similarity score for a match.
-        process_text (callable): Function to preprocess text before matching.
-        preserve_order (bool): Flag to indicate if order of matches should be preserved.
-        search_bound (tuple): Search boundary for matching.
     """
 
     def __init__(
         self,
         list_of_strings: List[str],
-        similarity_cutoff: int = 80,
-        preserve_order: bool = False,
+        soft_similarity_cutoff: float = 0.5,
+        hard_similarity_cutoff: float = 0.5,
+        return_index: bool = False,
         search_bound: tuple = (-15, +15),
-        process_text: callable = None,
     ):
         """
         Initializes FuzzyTextMatcher with the provided parameters.
 
         Args:
             list_of_strings (List[str]): List of strings to match against.
-            similarity_cutoff (int): Minimum similarity score for a match.
-            preserve_order (bool): Flag to indicate if order of matches should be preserved.
-            search_bound (tuple): Search boundary for matching.
-            process_text (callable): Function to preprocess text before matching.
+            soft_similarity_cutoff (int): Minimum similarity score for a initial similarity matching. Range [0,1].
+            hard_similarity_cutoff (int): Minimum similarity score for a the final similarity match. Range [0,1].
+            return_index (bool): Flag to indicate if index of the in the original list_of_strings is needed to be returned.
+            search_bound (tuple): Search boundary for matching. The search space will be updated based the boundary.
         """
-        self.similarity_cutoff = similarity_cutoff
-        self.process_text = process_text
-        self.preserve_order = preserve_order
+
+        self.soft_similarity_cutoff = soft_similarity_cutoff*100
+        self.hard_similarity_cutoff = hard_similarity_cutoff
+        self.return_index = return_index
         self.search_bound = search_bound
         self._format_texts(list_of_strings)
         self.return_format = namedtuple(
@@ -49,11 +44,12 @@ class FuzzyTextMatcher(object):
         Args:
             list_of_strings (List[str]): List of strings to format.
         """
-        if self.preserve_order:
+        if self.return_index:
             self.text_to_index = defaultdict(list)
             for idx, _string in enumerate(list_of_strings):
                 self.text_to_index[_string].append(idx)
 
+        self.number_of_strings = len(list_of_strings)
         list_of_strings = sorted(list(set(list_of_strings)), key=lambda x: (len(x), x))
         L = 0
         index = {0: 0}
@@ -69,13 +65,14 @@ class FuzzyTextMatcher(object):
         self.index = index
         self.max_length = len(list_of_strings[-1])
 
-    def __call__(self, text: str, search_bound: tuple = None):
+    def __call__(self, text: str, search_bound: tuple = None, topk: int = None):
         """
         Performs fuzzy text matching.
 
         Args:
             text (str): Text to match against.
-            search_bound (tuple): Search boundary for matching.
+            search_bound (tuple(int, int)): Search boundary for matching.
+            topk (int): to return topk matches
 
         Returns:
             list: List of matched texts and their scores.
@@ -89,18 +86,19 @@ class FuzzyTextMatcher(object):
         else:
             texts = self.texts
 
-        if self.preserve_order:
-            return self._order_preserving_search(texts, text)
+        if self.return_index:
+            return self._order_preserving_search(texts, text, topk)
         
-        return self._unordered_search(texts, text)
+        return self._unordered_search(texts, text, topk)
 
-    def _unordered_search(self, texts: str, text: str):
+    def _unordered_search(self, texts: str, text: str, topk: int = None):
         """
         Performs unordered search for matching.
 
         Args:
             texts (str): List of texts to search within.
             text (str): Text to match against.
+            topk (int): to return topk matches
 
         Returns:
             list: List of matched texts and their scores.
@@ -111,7 +109,7 @@ class FuzzyTextMatcher(object):
                     text,
                     texts,
                     scorer=fuzz.partial_ratio,
-                    score_cutoff=self.similarity_cutoff,
+                    score_cutoff=self.soft_similarity_cutoff,
                 )
             )
         )
@@ -139,31 +137,33 @@ class FuzzyTextMatcher(object):
             )
         ]
 
+        if not topk:
+            topk = len(matched_texts)
+
         return sorted(
             matched_texts, key=lambda t: (t.similarity, t.equality), reverse=True
-        )
+        )[:topk]
 
-    def _order_preserving_search(self, texts: str, text: str):
+    def _order_preserving_search(self, texts: str, text: str, topk: int = None):
         """
         Performs order-preserving search for matching.
 
         Args:
             texts (str): List of texts to search within.
             text (str): Text to match against.
+            topk (int): to return topk matches
 
         Returns:
-            dict: Matched texts along with their indices and scores.
+            list: Matched texts along with their indices and scores.
         """
-        matched_texts_and_scores = list(
-            zip(
-                *process.extractWithoutOrder(
-                    text,
-                    texts,
-                    scorer=fuzz.partial_ratio,
-                    score_cutoff=self.similarity_cutoff,
-                )
+        matched_texts_and_scores = list(zip(
+            *process.extractWithoutOrder(
+                text,
+                texts,
+                scorer=fuzz.partial_ratio,
+                score_cutoff=self.soft_similarity_cutoff
             )
-        )
+        ))
 
         if not matched_texts_and_scores:
             return []
@@ -174,22 +174,27 @@ class FuzzyTextMatcher(object):
             self._get_sequence_matcher_score(matched_text, text)
             for matched_text in matched_texts
         ]
-        scores = [(s1 + s2 * 2) / 300 for s1, s2 in zip(similarity_scores, sm_scores)]
+        scores = [(s1+s2*2)/300 for s1, s2 in zip(similarity_scores, sm_scores)]
 
         equality_scores = [
             self._get_length_equality_score(matched_text, text)
             for matched_text in matched_texts
         ]
 
-        matched_text_info = {}
-        for matched_text, score, equality in zip(
-            matched_texts, scores, equality_scores
-        ):
-            for idx in self.text_to_index[matched_text]:
-                matched_text_info[idx] = self.return_format(
-                    idx, matched_text, round(score, 3), round(equality, 3)
-                )
+        matched_texts = sorted(
+            matched_texts, key=lambda t: (t.similarity, t.equality), reverse=True
+        )
 
+        matched_text_info = []
+
+        for matched_text, score, equality in zip(matched_texts, scores, equality_scores):
+            for idx in self.text_to_index[matched_text]:
+                matched_text_info.append(self.return_format(
+                    idx, matched_text, round(score, 3), round(equality, 3)
+                ))
+                if topk and len(matched_text_info) > topk:
+                    break
+        
         return matched_text_info
 
     def _get_sequence_matcher_score(self, texts, text):
@@ -243,3 +248,24 @@ class FuzzyTextMatcher(object):
             r = r + 1
 
         return self.index[l], self.index[r] + 1
+
+    def _get_span(self, text, query_text):
+        sq = SequenceMatcher(None, text, query_text)
+        matching_blocks = list(sq.get_matching_blocks())[:-1]
+
+        if matching_blocks:
+            l = matching_blocks[0].a
+            r = matching_blocks[-1].a+ matching_blocks[-1].size
+            return (text[l:r], (l,r))
+        return ('', (-1,-1))
+    
+    def get_span_from_matched_text(self, matched_text, query_text):
+        return self._get_span(query_text, matched_text.text)
+    
+    def get_span_of_a_from_b(self, a, b):
+        return self._get_span(b, a)
+
+
+        
+
+
