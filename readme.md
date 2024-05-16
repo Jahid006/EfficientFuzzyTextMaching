@@ -58,12 +58,12 @@ ftm = FuzzyTextMatcher(
 ### callable(self, text: str, search_bound: tuple = None, topk: int = None)
 Performs fuzzy text matching.
 
-### Parameters
-- text (str): The text to match against.
-- search_bound (tuple): Search boundary for matching. Default is the class-level search_bound.
-- topk (int): Number of top matches to return. Default is None (returns all matches).
-### Returns
-- list: A list of matched texts and their scores.
+- Parameters
+    - text (str): The text to match against.
+    - search_bound (tuple): Search boundary for matching. Default is the class-level search_bound.
+    - topk (int): Number of top matches to return. Default is None (returns all matches).
+- Returns
+    - list: A list of matched texts and their scores.
 
 ### Example
 
@@ -82,11 +82,11 @@ print(matches)
 ### get_span_from_matched_text(matched_text, query_text)
 Gets the span of the matched text within the query text.
 
-### Parameters
-- matched_text (MatchedText): The matched text object.
-- query_text (str): The query text.
-### Returns
-- tuple: Matched text and the span of the matched text in the query text.
+- Parameters
+    - matched_text (MatchedText): The matched text object.
+    - query_text (str): The query text.
+- Returns
+    - tuple: Matched text and the span of the matched text in the query text.
 
 ### Example
 ```python
@@ -101,7 +101,7 @@ Gets the span of text a within text b.
 - Parameters
     - a (str): Text to find the span of.
     - b (str): Text to search within.
-Returns
+- Returns
     - tuple: The span of text a in text b.
 ```python
 span = ftm.get_span_of_a_from_b(a=matches[0].text, b='আমার একাউন্ট টি শাহ মখদুম এভিনিউ ব্রাঞ্চ এ খুলেছি')
