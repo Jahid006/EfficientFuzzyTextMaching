@@ -35,16 +35,6 @@ FuzzyTextMatcher(
 - search_bound (tuple): Search boundary for matching, which updates the search space based on the boundary. Default to (-15, +15) characters.
 
 
-```python
-FuzzyTextMatcher(
-    list_of_strings: List[str],
-    soft_similarity_cutoff: float = 0.5,
-    hard_similarity_cutoff: float = 0.5,
-    return_index: bool = False,
-    search_bound: tuple = (-15, +15)
-)
-```
-
 ## Example Usage
 ```python
 from fuzzy_text_matcher import FuzzyTextMatcher
