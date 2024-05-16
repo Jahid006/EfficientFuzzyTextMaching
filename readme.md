@@ -102,7 +102,7 @@ Gets the span of text a within text b.
     - a (str): Text to find the span of.
     - b (str): Text to search within.
 - Returns
-    - tuple: The span of text a in text b.
+    - tuple: Matched text and the span of text a in text b.
 ```python
 span = ftm.get_span_of_a_from_b(a=matches[0].text, b='আমার একাউন্ট টি শাহ মখদুম এভিনিউ ব্রাঞ্চ এ খুলেছি')
 print(span)
