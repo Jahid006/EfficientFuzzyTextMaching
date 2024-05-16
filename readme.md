@@ -32,7 +32,7 @@ FuzzyTextMatcher(
 - soft_similarity_cutoff (float): Minimum similarity score for an initial similarity matching. Range [0, 1]. Default to 0.5.
 - hard_similarity_cutoff (float): Minimum similarity score for the final similarity match. Range [0, 1]. Default to 0.5.
 - return_index (bool): If True, returns the index of the matched string in the original list_of_strings. Default to False.
-- search_bound (tuple): Search boundary for matching, which updates the search space based on the boundary. Default to (-15, +15) characters.
+- search_bound (tuple): Search boundary for matching, which updates the search space based on the boundary. Default to (-15, +15) characters. This means if the query text length is 50 characters, all texts length between 35 to 65 will be searched.
 
 
 ## Example
