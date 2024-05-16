@@ -62,7 +62,7 @@ Performs fuzzy text matching.
 - text (str): The text to match against.
 - search_bound (tuple): Search boundary for matching. Default is the class-level search_bound.
 - topk (int): Number of top matches to return. Default is None (returns all matches).
-Returns
+### Returns
 - list: A list of matched texts and their scores.
 
 ### Example
