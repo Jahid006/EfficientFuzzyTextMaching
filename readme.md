@@ -35,7 +35,7 @@ FuzzyTextMatcher(
 - search_bound (tuple): Search boundary for matching, which updates the search space based on the boundary. Default to (-15, +15) characters.
 
 
-## Example Usage
+## Example
 ```python
 from fuzzy_text_matcher import FuzzyTextMatcher
 
