@@ -1,59 +1,47 @@
 import unittest
 from fuzzy_text_matcher import FuzzyTextMatcher
 
-
 class TestFuzzyTextMatcher(unittest.TestCase):
 
-    def test_unordered_search(self):
-        matcher = FuzzyTextMatcher(["apple", "banana", "orange"])
-        matches = matcher("app")
-        self.assertEqual(len(matches), 1)
-        self.assertEqual(matches[0].text, "apple")
+    def setUp(self):
+        self.list_of_strings = [
+            "শাহপরান গেট শাখা",
+            "শাহপরান গেট",
+            "শাহপরান",
+            "শাহপরান গেট ব্রাঞ্চ"
+        ]
+        self.list_of_strings = sorted(self.list_of_strings, key=lambda x: (len(x), x))
+        self.ftm = FuzzyTextMatcher(
+            list_of_strings=self.list_of_strings,
+            soft_similarity_cutoff=0.5,
+            hard_similarity_cutoff=0.5,
+            search_bound=(-115, +115)
+        )
 
-    def test_order_preserving_search(self):
-        matcher = FuzzyTextMatcher(["apple", "banana", "orange"], preserve_order=True)
-        matches = matcher("app")
-        self.assertEqual(len(matches), 1)
-        self.assertEqual(matches[0].index, 0)  # Matches with 'apple'
+    def test_call(self):
+        query = 'আমার একাউন্ট টি শাহ মখদুম এভিনিউ ব্রাঞ্চ এ খুলেছি'
+        matches = self.ftm(query)
+        expected_matches = [
+            self.ftm.return_format(index=-1, text='শাহপরান গেট ব্রাঞ্চ', similarity=0.445, equality=0.388),
+            self.ftm.return_format(index=-1, text='শাহপরান গেট শাখা', similarity=0.344, equality=0.327),
+            self.ftm.return_format(index=-1, text='শাহপরান গেট', similarity=0.339, equality=0.224),
+            self.ftm.return_format(index=-1, text='শাহপরান', similarity=0.309, equality=0.143)
+        ]
+        self.assertEqual(matches, expected_matches)
 
-    def test_empty_input_text(self):
-        matcher = FuzzyTextMatcher(["apple", "banana", "orange"])
-        with self.assertRaises(AssertionError):
-            matcher("")
+    def test_get_span_from_matched_text(self):
+        query = 'আমার একাউন্ট টি শাহ মখদুম এভিনিউ ব্রাঞ্চ এ খুলেছি'
+        matches = self.ftm(query)
+        span = self.ftm.get_span_from_matched_text(matches[0], query)
+        expected_span = ('শাহ মখদুম এভিনিউ ব্রাঞ্চ', (16, 40))
+        self.assertEqual(span, expected_span)
 
-    def test_empty_text_list(self):
-        matcher = FuzzyTextMatcher([])
-        matches = matcher("apple")
-        self.assertEqual(matches, [])
+    def test_get_span_of_a_from_b(self):
+        query = 'আমার একাউন্ট টি শাহ মখদুম এভিনিউ ব্রাঞ্চ এ খুলেছি'
+        matches = self.ftm(query)
+        span = self.ftm.get_span_of_a_from_b(a=matches[0].text, b=query)
+        expected_span = ('শাহ মখদুম এভিনিউ ব্রাঞ্চ', (16, 40))
+        self.assertEqual(span, expected_span)
 
-    def test_similarity_cutoff(self):
-        matcher = FuzzyTextMatcher(["apple", "banana", "orange"], similarity_cutoff=90)
-        matches = matcher("appl")
-        self.assertEqual(matches, [])  # No match above 90% similarity
-
-    def test_search_bound(self):
-        matcher = FuzzyTextMatcher(["apple", "banana", "orange"])
-        matches = matcher("apple", search_bound=(0, 0))
-        self.assertEqual(len(matches), 1)  # Matches with 'apple'
-
-    def test_process_text(self):
-        def process(text):
-            return text.upper()
-
-        matcher = FuzzyTextMatcher(["apple", "banana", "orange"], process_text=process)
-        matches = matcher("APPLE")
-        self.assertEqual(len(matches), 1)  # Matches with 'apple'
-
-    def test_length_equality_score(self):
-        matcher = FuzzyTextMatcher(["apple", "banana", "orange"])
-        score = matcher._get_length_equality_score("apple", "banana")
-        self.assertAlmostEqual(score, 0.571, delta=0.001)  # Length ratio: 5/6
-
-    def test_sequence_matcher_score(self):
-        matcher = FuzzyTextMatcher(["apple", "banana", "orange"])
-        score = matcher._get_sequence_matcher_score("apple", "appl")
-        self.assertEqual(score, 100.0)  # Exact match
-
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()
