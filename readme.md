@@ -85,8 +85,8 @@ Gets the span of the matched text within the query text.
 ### Parameters
 - matched_text (MatchedText): The matched text object.
 - query_text (str): The query text.
-Returns
-- tuple: The span of the matched text in the query text.
+### Returns
+- tuple: Matched text and the span of the matched text in the query text.
 
 ### Example
 ```python
