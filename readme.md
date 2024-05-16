@@ -2,13 +2,6 @@
 
 The FuzzyTextMatcher class is designed for fuzzy text matching, allowing you to find approximate matches for a given text from a list of strings. This is useful in scenarios where exact matches are not possible due to variations in the text, such as typos, different spellings, or slight differences in phrasing.
 
-## Features
-
-- **Fuzzy Matching**: Utilizes the `fuzzywuzzy` library to perform fuzzy matching based on similarity scores.
-- **Sequence Matching**: Uses the `difflib` library to calculate sequence matcher scores.
-- **Order Preservation**: Supports both order-preserving and unordered matching modes.
-- **Customizable**: Provides options to customize similarity cutoff, search boundaries, and text preprocessing.
-
 ## Installation
 
 1. Clone the repository:
@@ -36,10 +29,10 @@ FuzzyTextMatcher(
 ```
 ## Parameters
 - list_of_strings (List[str]): A list of strings to match against.
-- soft_similarity_cutoff (float): Minimum similarity score for an initial similarity matching. Range [0, 1]. Default is 0.5.
-- hard_similarity_cutoff (float): Minimum similarity score for the final similarity match. Range [0, 1]. Default is 0.5.
-- return_index (bool): If True, returns the index of the matched string in the original list_of_strings. Default is False.
-- search_bound (tuple): Search boundary for matching, which updates the search space based on the boundary. Default is (-15, +15) characters.
+- soft_similarity_cutoff (float): Minimum similarity score for an initial similarity matching. Range [0, 1]. Default to 0.5.
+- hard_similarity_cutoff (float): Minimum similarity score for the final similarity match. Range [0, 1]. Default to 0.5.
+- return_index (bool): If True, returns the index of the matched string in the original list_of_strings. Default to False.
+- search_bound (tuple): Search boundary for matching, which updates the search space based on the boundary. Default to (-15, +15) characters.
 
 
 ```python
@@ -96,7 +89,6 @@ print(matches)
 
 ```
 
-## Extract Span
 ### get_span_from_matched_text(matched_text, query_text)
 Gets the span of the matched text within the query text.
 
@@ -105,7 +97,6 @@ Gets the span of the matched text within the query text.
 - query_text (str): The query text.
 Returns
 - tuple: The span of the matched text in the query text.
-
 
 ### Example
 ```python
@@ -117,11 +108,11 @@ print(span)
 ### get_span_of_a_from_b(a, b)
 Gets the span of text a within text b.
 
-Parameters
-- a (str): Text to find the span of.
-- b (str): Text to search within.
+- Parameters
+    - a (str): Text to find the span of.
+    - b (str): Text to search within.
 Returns
-- tuple: The span of text a in text b.
+    - tuple: The span of text a in text b.
 ```python
 span = ftm.get_span_of_a_from_b(a=matches[0].text, b='আমার একাউন্ট টি শাহ মখদুম এভিনিউ ব্রাঞ্চ এ খুলেছি')
 print(span)
