@@ -7,7 +7,7 @@ The FuzzyTextMatcher class is designed for fuzzy text matching, allowing you to 
 1. Clone the repository:
 
     ```bash
-    git clone https://github.com/your_username/FuzzyTextMatcherV2.git
+    git clone https://github.com/JahidBasher/EfficientFuzzyTextMaching.git
     ```
 
 2. Install the required dependencies:
